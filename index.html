@@ -375,7 +375,7 @@
             errorDiv.classList.remove('show');
             resultDiv.classList.remove('show');
             
-            fetch(`http://localhost:8000/api/carbon?activity=${activity}&value=${value}`)
+            fetch(`https://carbon-tracker-production-9ff2.up.railway.app/api/carbon?activity=${activity}&value=${value}`)
                 .then(response => {
                     if (!response.ok) throw new Error('Erreur API');
                     return response.json();
@@ -398,6 +398,7 @@
                     loadingDiv.classList.remove('show');
                     errorDiv.textContent = 'Erreur de connexion à l\'API. Assure-toi que le serveur est lancé!';
                     errorDiv.classList.add('show');
+                    console.error('Error:', error);
                 });
         }
         
