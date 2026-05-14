@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Carbon Tracker Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * {
             margin: 0;
@@ -26,7 +27,7 @@
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             padding: 40px;
-            max-width: 700px;
+            max-width: 900px;
             width: 100%;
         }
         
@@ -92,10 +93,6 @@
         
         button:hover {
             transform: translateY(-2px);
-        }
-        
-        button:active {
-            transform: translateY(0);
         }
         
         .result {
@@ -179,6 +176,57 @@
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
+        }
+        
+        .stats-section {
+            margin-top: 40px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .stat-card h3 {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-bottom: 10px;
+        }
+        
+        .stat-card .value {
+            font-size: 2em;
+            font-weight: bold;
+        }
+        
+        .chart-section {
+            margin-top: 40px;
+            background: #f9f9f9;
+            padding: 30px;
+            border-radius: 15px;
+            display: none;
+        }
+        
+        .chart-section.show {
+            display: block;
+        }
+        
+        .chart-title {
+            color: #333;
+            font-weight: 600;
+            font-size: 1.3em;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .chart-container {
+            position: relative;
+            height: 300px;
         }
         
         .history-section {
@@ -272,9 +320,29 @@
         
         <div class="error" id="error"></div>
         
+        <!-- STATISTIQUES -->
+        <div class="stats-section" id="statsSection">
+            <div class="stat-card">
+                <h3>Total CO2</h3>
+                <div class="value" id="totalCO2">0 kg</div>
+            </div>
+            <div class="stat-card">
+                <h3>Nombre de calculs</h3>
+                <div class="value" id="totalCalcs">0</div>
+            </div>
+        </div>
+        
+        <!-- GRAPHIQUE -->
+        <div class="chart-section" id="chartSection">
+            <div class="chart-title">📊 Émissions par activité</div>
+            <div class="chart-container">
+                <canvas id="emissionsChart"></canvas>
+            </div>
+        </div>
+        
         <!-- HISTORIQUE -->
         <div class="history-section">
-            <div class="history-title">📊 Historique</div>
+            <div class="history-title">📋 Historique</div>
             <div class="history-list" id="historyList">
                 <div class="history-empty">Aucun calcul encore</div>
             </div>
@@ -283,8 +351,11 @@
     </div>
     
     <script>
-        // Charger l'historique au démarrage
+        let chart = null;
+        
+        // Charger au démarrage
         loadHistory();
+        updateStats();
         
         function calculateCarbon() {
             const activity = document.getElementById('activity').value;
@@ -293,7 +364,6 @@
             const errorDiv = document.getElementById('error');
             const loadingDiv = document.getElementById('loading');
             
-            // Validation
             if (!value || value <= 0) {
                 errorDiv.textContent = 'Veuillez entrer une valeur positive';
                 errorDiv.classList.add('show');
@@ -301,12 +371,10 @@
                 return;
             }
             
-            // Affiche le loading
             loadingDiv.classList.add('show');
             errorDiv.classList.remove('show');
             resultDiv.classList.remove('show');
             
-            // Appelle l'API
             fetch(`http://localhost:8000/api/carbon?activity=${activity}&value=${value}`)
                 .then(response => {
                     if (!response.ok) throw new Error('Erreur API');
@@ -323,7 +391,6 @@
                         document.getElementById('resultDetails').textContent = `${data.activity} - ${data.value} unités`;
                         resultDiv.classList.add('show');
                         
-                        // Ajouter à l'historique
                         addToHistory(data);
                     }
                 })
@@ -335,10 +402,8 @@
         }
         
         function addToHistory(data) {
-            // Récupérer l'historique
             let history = JSON.parse(localStorage.getItem('carbonHistory')) || [];
             
-            // Ajouter le nouveau calcul
             history.unshift({
                 activity: data.activity,
                 value: data.value,
@@ -346,14 +411,11 @@
                 timestamp: new Date().toLocaleTimeString('fr-FR')
             });
             
-            // Garder seulement les 10 derniers
             history = history.slice(0, 10);
-            
-            // Sauvegarder
             localStorage.setItem('carbonHistory', JSON.stringify(history));
             
-            // Afficher
             loadHistory();
+            updateStats();
         }
         
         function loadHistory() {
@@ -374,6 +436,86 @@
             `).join('');
         }
         
+        function updateStats() {
+            const history = JSON.parse(localStorage.getItem('carbonHistory')) || [];
+            
+            // Total CO2
+            const totalCO2 = history.reduce((sum, item) => sum + item.carbon_kg, 0);
+            document.getElementById('totalCO2').textContent = totalCO2.toFixed(2) + ' kg';
+            
+            // Nombre de calculs
+            document.getElementById('totalCalcs').textContent = history.length;
+            
+            // Afficher stats si calculs
+            if (history.length > 0) {
+                document.getElementById('statsSection').style.display = 'grid';
+                updateChart(history);
+            }
+        }
+        
+        function updateChart(history) {
+            const chartSection = document.getElementById('chartSection');
+            chartSection.classList.add('show');
+            
+            // Agréger les données par activité
+            const aggregated = {};
+            history.forEach(item => {
+                if (!aggregated[item.activity]) {
+                    aggregated[item.activity] = 0;
+                }
+                aggregated[item.activity] += item.carbon_kg;
+            });
+            
+            const labels = Object.keys(aggregated).map(a => getEmoji(a) + ' ' + a);
+            const data = Object.values(aggregated);
+            
+            const ctx = document.getElementById('emissionsChart').getContext('2d');
+            
+            if (chart) {
+                chart.destroy();
+            }
+            
+            chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'CO2 (kg)',
+                        data: data,
+                        backgroundColor: [
+                            '#667eea',
+                            '#764ba2',
+                            '#f093fb',
+                            '#4facfe',
+                            '#00f2fe',
+                            '#43e97b'
+                        ],
+                        borderRadius: 8,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + ' kg';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
         function getEmoji(activity) {
             const emojis = {
                 'car': '🚗',
@@ -390,10 +532,16 @@
             if (confirm('Êtes-vous sûr de vouloir effacer l\'historique ?')) {
                 localStorage.removeItem('carbonHistory');
                 loadHistory();
+                updateStats();
+                if (chart) {
+                    chart.destroy();
+                    chart = null;
+                }
+                document.getElementById('chartSection').classList.remove('show');
+                document.getElementById('statsSection').style.display = 'none';
             }
         }
         
-        // Permet d'appuyer sur Entrée pour calculer
         document.getElementById('value').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') calculateCarbon();
         });
