@@ -29,10 +29,16 @@ def calculate_carbon(activity_type, value):
 
 class CarbonHandler(BaseHTTPRequestHandler):
     def do_GET(self):
+        """Gère les requêtes GET"""
+        # Ajouter les en-têtes CORS
+        self.send_response(200)
+        self.send_header('Content-type', 'application/json')
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+        self.end_headers()
+        
         if self.path == '/':
-            self.send_response(200)
-            self.send_header('Content-type', 'application/json')
-            self.end_headers()
             response = {
                 'message': 'Carbon Tracker API v2.0',
                 'endpoints': {
@@ -43,9 +49,6 @@ class CarbonHandler(BaseHTTPRequestHandler):
             self.wfile.write(json.dumps(response).encode())
         
         elif self.path == '/api/status':
-            self.send_response(200)
-            self.send_header('Content-type', 'application/json')
-            self.end_headers()
             response = {'status': 'operational', 'version': '2.0'}
             self.wfile.write(json.dumps(response).encode())
         
@@ -55,8 +58,6 @@ class CarbonHandler(BaseHTTPRequestHandler):
             
             if 'activity' not in params or 'value' not in params:
                 self.send_response(400)
-                self.send_header('Content-type', 'application/json')
-                self.end_headers()
                 response = {'error': 'Use ?activity=car&value=100'}
                 self.wfile.write(json.dumps(response).encode())
                 return
@@ -66,8 +67,6 @@ class CarbonHandler(BaseHTTPRequestHandler):
                 value = float(params['value'][0])
             except ValueError:
                 self.send_response(400)
-                self.send_header('Content-type', 'application/json')
-                self.end_headers()
                 response = {'error': 'Value must be a number'}
                 self.wfile.write(json.dumps(response).encode())
                 return
@@ -76,22 +75,24 @@ class CarbonHandler(BaseHTTPRequestHandler):
             
             if result is None:
                 self.send_response(404)
-                self.send_header('Content-type', 'application/json')
-                self.end_headers()
                 response = {'error': f'Activity "{activity}" not found', 'available': list(EMISSION_FACTORS.keys())}
                 self.wfile.write(json.dumps(response).encode())
             else:
                 self.send_response(200)
-                self.send_header('Content-type', 'application/json')
-                self.end_headers()
                 self.wfile.write(json.dumps(result).encode())
         
         else:
             self.send_response(404)
-            self.send_header('Content-type', 'application/json')
-            self.end_headers()
             response = {'error': 'Not found'}
             self.wfile.write(json.dumps(response).encode())
+    
+    def do_OPTIONS(self):
+        """Gère les requêtes OPTIONS pour CORS"""
+        self.send_response(200)
+        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+        self.end_headers()
 
 if __name__ == '__main__':
     server = HTTPServer(('localhost', 8000), CarbonHandler)
