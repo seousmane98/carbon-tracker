@@ -26,7 +26,7 @@
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             padding: 40px;
-            max-width: 600px;
+            max-width: 700px;
             width: 100%;
         }
         
@@ -180,6 +180,57 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        
+        .history-section {
+            margin-top: 40px;
+            border-top: 2px solid #e0e0e0;
+            padding-top: 30px;
+        }
+        
+        .history-title {
+            color: #333;
+            font-weight: 600;
+            font-size: 1.3em;
+            margin-bottom: 20px;
+        }
+        
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .history-item {
+            background: #f9f9f9;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            font-size: 0.95em;
+            color: #555;
+        }
+        
+        .history-item strong {
+            color: #667eea;
+        }
+        
+        .history-empty {
+            color: #999;
+            font-style: italic;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .clear-btn {
+            margin-top: 15px;
+            background: #f0f0f0;
+            color: #666;
+            font-size: 0.9em;
+            padding: 10px;
+        }
+        
+        .clear-btn:hover {
+            background: #e0e0e0;
+        }
     </style>
 </head>
 <body>
@@ -220,9 +271,21 @@
         </div>
         
         <div class="error" id="error"></div>
+        
+        <!-- HISTORIQUE -->
+        <div class="history-section">
+            <div class="history-title">📊 Historique</div>
+            <div class="history-list" id="historyList">
+                <div class="history-empty">Aucun calcul encore</div>
+            </div>
+            <button class="clear-btn" onclick="clearHistory()">Effacer l'historique</button>
+        </div>
     </div>
     
     <script>
+        // Charger l'historique au démarrage
+        loadHistory();
+        
         function calculateCarbon() {
             const activity = document.getElementById('activity').value;
             const value = document.getElementById('value').value;
@@ -259,6 +322,9 @@
                         document.getElementById('resultValue').textContent = `${data.carbon_kg} kg CO2`;
                         document.getElementById('resultDetails').textContent = `${data.activity} - ${data.value} unités`;
                         resultDiv.classList.add('show');
+                        
+                        // Ajouter à l'historique
+                        addToHistory(data);
                     }
                 })
                 .catch(error => {
@@ -266,6 +332,65 @@
                     errorDiv.textContent = 'Erreur de connexion à l\'API. Assure-toi que le serveur est lancé!';
                     errorDiv.classList.add('show');
                 });
+        }
+        
+        function addToHistory(data) {
+            // Récupérer l'historique
+            let history = JSON.parse(localStorage.getItem('carbonHistory')) || [];
+            
+            // Ajouter le nouveau calcul
+            history.unshift({
+                activity: data.activity,
+                value: data.value,
+                carbon_kg: data.carbon_kg,
+                timestamp: new Date().toLocaleTimeString('fr-FR')
+            });
+            
+            // Garder seulement les 10 derniers
+            history = history.slice(0, 10);
+            
+            // Sauvegarder
+            localStorage.setItem('carbonHistory', JSON.stringify(history));
+            
+            // Afficher
+            loadHistory();
+        }
+        
+        function loadHistory() {
+            const history = JSON.parse(localStorage.getItem('carbonHistory')) || [];
+            const historyList = document.getElementById('historyList');
+            
+            if (history.length === 0) {
+                historyList.innerHTML = '<div class="history-empty">Aucun calcul encore</div>';
+                return;
+            }
+            
+            historyList.innerHTML = history.map(item => `
+                <div class="history-item">
+                    <strong>${getEmoji(item.activity)} ${item.activity}</strong> - 
+                    ${item.value} unités = <strong>${item.carbon_kg} kg CO2</strong>
+                    <br><small>🕐 ${item.timestamp}</small>
+                </div>
+            `).join('');
+        }
+        
+        function getEmoji(activity) {
+            const emojis = {
+                'car': '🚗',
+                'bus': '🚌',
+                'train': '🚂',
+                'flight': '✈️',
+                'electricity': '⚡',
+                'meat': '🥩'
+            };
+            return emojis[activity] || '📊';
+        }
+        
+        function clearHistory() {
+            if (confirm('Êtes-vous sûr de vouloir effacer l\'historique ?')) {
+                localStorage.removeItem('carbonHistory');
+                loadHistory();
+            }
         }
         
         // Permet d'appuyer sur Entrée pour calculer
