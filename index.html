@@ -286,7 +286,7 @@
         <div class="header">
             <div class="emoji">🌍</div>
             <h1>Carbon Tracker</h1>
-            <p>Calcule ton empreinte carbone</p>
+            <p>Calcule ton empreinte carbone (Données sauvegardées dans le cloud ☁️)</p>
         </div>
         
         <div class="form-group">
@@ -320,8 +320,7 @@
         
         <div class="error" id="error"></div>
         
-        <!-- STATISTIQUES -->
-        <div class="stats-section" id="statsSection">
+        <div class="stats-section" id="statsSection" style="display: none;">
             <div class="stat-card">
                 <h3>Total CO2</h3>
                 <div class="value" id="totalCO2">0 kg</div>
@@ -332,7 +331,6 @@
             </div>
         </div>
         
-        <!-- GRAPHIQUE -->
         <div class="chart-section" id="chartSection">
             <div class="chart-title">📊 Émissions par activité</div>
             <div class="chart-container">
@@ -340,24 +338,42 @@
             </div>
         </div>
         
-        <!-- HISTORIQUE -->
         <div class="history-section">
-            <div class="history-title">📋 Historique</div>
+            <div class="history-title">📋 Historique Cloud</div>
             <div class="history-list" id="historyList">
-                <div class="history-empty">Aucun calcul encore</div>
+                <div class="history-empty">Chargement depuis le cloud...</div>
             </div>
             <button class="clear-btn" onclick="clearHistory()">Effacer l'historique</button>
         </div>
     </div>
-    
-    <script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, query, orderBy, limit, onSnapshot, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+
+        // Firebase config
+        const firebaseConfig = {
+            apiKey: "AIzaSyAT4IsI4MY9Ds2E92YVBh4FyaNI1bveCgU",
+            authDomain: "carbon-tracker-7c1b4.firebaseapp.com",
+            projectId: "carbon-tracker-7c1b4",
+            storageBucket: "carbon-tracker-7c1b4.firebasestorage.app",
+            messagingSenderId: "1016656840710",
+            appId: "1:1016656840710:web:e7daa2ce01a0d36476db87",
+            measurementId: "G-R7M845HV6X"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        
         let chart = null;
+        const userId = 'anonymous-user';
         
         // Charger au démarrage
         loadHistory();
         updateStats();
         
-        function calculateCarbon() {
+        window.calculateCarbon = function() {
             const activity = document.getElementById('activity').value;
             const value = document.getElementById('value').value;
             const resultDiv = document.getElementById('result');
@@ -376,10 +392,7 @@
             resultDiv.classList.remove('show');
             
             fetch(`https://carbon-tracker-production-9ff2.up.railway.app/api/carbon?activity=${activity}&value=${value}`)
-                .then(response => {
-                    if (!response.ok) throw new Error('Erreur API');
-                    return response.json();
-                })
+                .then(response => response.json())
                 .then(data => {
                     loadingDiv.classList.remove('show');
                     
@@ -390,64 +403,75 @@
                         document.getElementById('resultValue').textContent = `${data.carbon_kg} kg CO2`;
                         document.getElementById('resultDetails').textContent = `${data.activity} - ${data.value} unités`;
                         resultDiv.classList.add('show');
-                        
                         addToHistory(data);
                     }
                 })
                 .catch(error => {
                     loadingDiv.classList.remove('show');
-                    errorDiv.textContent = 'Erreur de connexion à l\'API. Assure-toi que le serveur est lancé!';
+                    errorDiv.textContent = 'Erreur de connexion à l\'API';
                     errorDiv.classList.add('show');
-                    console.error('Error:', error);
                 });
-        }
+        };
         
-        function addToHistory(data) {
-            let history = JSON.parse(localStorage.getItem('carbonHistory')) || [];
-            
-            history.unshift({
-                activity: data.activity,
-                value: data.value,
-                carbon_kg: data.carbon_kg,
-                timestamp: new Date().toLocaleTimeString('fr-FR')
-            });
-            
-            history = history.slice(0, 10);
-            localStorage.setItem('carbonHistory', JSON.stringify(history));
-            
-            loadHistory();
-            updateStats();
+        async function addToHistory(data) {
+            try {
+                await addDoc(collection(db, 'users', userId, 'history'), {
+                    activity: data.activity,
+                    value: data.value,
+                    carbon_kg: data.carbon_kg,
+                    timestamp: new Date()
+                });
+                loadHistory();
+            } catch (e) {
+                console.error('Erreur Firestore:', e);
+            }
         }
         
         function loadHistory() {
-            const history = JSON.parse(localStorage.getItem('carbonHistory')) || [];
             const historyList = document.getElementById('historyList');
+            const q = query(collection(db, 'users', userId, 'history'), orderBy('timestamp', 'desc'), limit(10));
             
-            if (history.length === 0) {
-                historyList.innerHTML = '<div class="history-empty">Aucun calcul encore</div>';
-                return;
-            }
-            
-            historyList.innerHTML = history.map(item => `
-                <div class="history-item">
-                    <strong>${getEmoji(item.activity)} ${item.activity}</strong> - 
-                    ${item.value} unités = <strong>${item.carbon_kg} kg CO2</strong>
-                    <br><small>🕐 ${item.timestamp}</small>
-                </div>
-            `).join('');
+            onSnapshot(q, (snapshot) => {
+                const history = [];
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    history.push({
+                        activity: data.activity,
+                        value: data.value,
+                        carbon_kg: data.carbon_kg,
+                        timestamp: data.timestamp.toDate().toLocaleTimeString('fr-FR'),
+                        id: doc.id
+                    });
+                });
+                
+                if (history.length === 0) {
+                    historyList.innerHTML = '<div class="history-empty">Aucun calcul encore</div>';
+                    return;
+                }
+                
+                historyList.innerHTML = history.map(item => `
+                    <div class="history-item">
+                        <strong>${getEmoji(item.activity)} ${item.activity}</strong> - 
+                        ${item.value} unités = <strong>${item.carbon_kg} kg CO2</strong>
+                        <br><small>🕐 ${item.timestamp}</small>
+                    </div>
+                `).join('');
+                
+                updateStats();
+            });
         }
         
-        function updateStats() {
-            const history = JSON.parse(localStorage.getItem('carbonHistory')) || [];
+        async function updateStats() {
+            const snapshot = await getDocs(collection(db, 'users', userId, 'history'));
+            const history = [];
+            snapshot.forEach(doc => {
+                history.push(doc.data());
+            });
             
-            // Total CO2
             const totalCO2 = history.reduce((sum, item) => sum + item.carbon_kg, 0);
             document.getElementById('totalCO2').textContent = totalCO2.toFixed(2) + ' kg';
-            
-            // Nombre de calculs
             document.getElementById('totalCalcs').textContent = history.length;
             
-            // Afficher stats si calculs
             if (history.length > 0) {
                 document.getElementById('statsSection').style.display = 'grid';
                 updateChart(history);
@@ -458,7 +482,6 @@
             const chartSection = document.getElementById('chartSection');
             chartSection.classList.add('show');
             
-            // Agréger les données par activité
             const aggregated = {};
             history.forEach(item => {
                 if (!aggregated[item.activity]) {
@@ -483,14 +506,7 @@
                     datasets: [{
                         label: 'CO2 (kg)',
                         data: data,
-                        backgroundColor: [
-                            '#667eea',
-                            '#764ba2',
-                            '#f093fb',
-                            '#4facfe',
-                            '#00f2fe',
-                            '#43e97b'
-                        ],
+                        backgroundColor: ['#667eea', '#764ba2', '#f093fb', '#4facfe', '#00f2fe', '#43e97b'],
                         borderRadius: 8,
                         borderSkipped: false
                     }]
@@ -498,19 +514,11 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    },
+                    plugins: { legend: { display: false } },
                     scales: {
                         y: {
                             beginAtZero: true,
-                            ticks: {
-                                callback: function(value) {
-                                    return value + ' kg';
-                                }
-                            }
+                            ticks: { callback: function(value) { return value + ' kg'; } }
                         }
                     }
                 }
@@ -518,30 +526,19 @@
         }
         
         function getEmoji(activity) {
-            const emojis = {
-                'car': '🚗',
-                'bus': '🚌',
-                'train': '🚂',
-                'flight': '✈️',
-                'electricity': '⚡',
-                'meat': '🥩'
-            };
+            const emojis = {'car': '🚗', 'bus': '🚌', 'train': '🚂', 'flight': '✈️', 'electricity': '⚡', 'meat': '🥩'};
             return emojis[activity] || '📊';
         }
         
-        function clearHistory() {
-            if (confirm('Êtes-vous sûr de vouloir effacer l\'historique ?')) {
-                localStorage.removeItem('carbonHistory');
+        window.clearHistory = async function() {
+            if (confirm('Effacer l\'historique cloud ?')) {
+                const snapshot = await getDocs(collection(db, 'users', userId, 'history'));
+                snapshot.forEach(async doc => {
+                    await deleteDoc(doc.ref);
+                });
                 loadHistory();
-                updateStats();
-                if (chart) {
-                    chart.destroy();
-                    chart = null;
-                }
-                document.getElementById('chartSection').classList.remove('show');
-                document.getElementById('statsSection').style.display = 'none';
             }
-        }
+        };
         
         document.getElementById('value').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') calculateCarbon();
