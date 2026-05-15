@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Carbon Tracker - Calculateur d'Empreinte Carbone</title>
+    <title>Carbon Tracker - L'app incontournable pour réduire ton empreinte carbone</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * {
@@ -19,56 +19,56 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 20px;
+            padding: 15px;
         }
         
         .container {
             background: white;
             border-radius: 20px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            padding: 40px;
+            padding: 30px;
             max-width: 1000px;
             width: 100%;
         }
         
         .header {
             text-align: center;
-            margin-bottom: 40px;
+            margin-bottom: 35px;
         }
         
         .header h1 {
             color: #333;
-            font-size: 2.5em;
-            margin-bottom: 10px;
+            font-size: 2em;
+            margin-bottom: 8px;
         }
         
         .header p {
             color: #666;
-            font-size: 1.1em;
+            font-size: 0.95em;
         }
         
         .emoji {
-            font-size: 3em;
+            font-size: 2.5em;
             margin-bottom: 10px;
         }
         
         .form-group {
-            margin-bottom: 25px;
+            margin-bottom: 20px;
         }
         
         label {
             display: block;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             color: #333;
             font-weight: 600;
-            font-size: 1.1em;
+            font-size: 0.95em;
         }
         
         select, input {
             width: 100%;
-            padding: 12px;
+            padding: 10px;
             border: 2px solid #e0e0e0;
-            border-radius: 10px;
+            border-radius: 8px;
             font-size: 1em;
             transition: border-color 0.3s;
         }
@@ -80,15 +80,16 @@
         
         button {
             width: 100%;
-            padding: 15px;
+            padding: 12px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
-            border-radius: 10px;
-            font-size: 1.1em;
+            border-radius: 8px;
+            font-size: 1em;
             font-weight: 600;
             cursor: pointer;
             transition: transform 0.2s;
+            margin-bottom: 10px;
         }
         
         button:hover {
@@ -98,9 +99,9 @@
         .result {
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             border-left: 4px solid #667eea;
-            padding: 25px;
-            border-radius: 10px;
-            margin-top: 30px;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
             display: none;
         }
         
@@ -110,69 +111,84 @@
         }
         
         @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
         .result-title {
             color: #667eea;
             font-weight: 600;
-            margin-bottom: 10px;
-            font-size: 1.1em;
+            margin-bottom: 8px;
+            font-size: 1em;
         }
         
         .result-value {
-            font-size: 2.5em;
+            font-size: 2em;
             color: #333;
             font-weight: bold;
-        }
-        
-        .result-unit {
-            color: #666;
-            font-size: 0.95em;
-            margin-top: 10px;
         }
         
         .explanation {
             background: #fff3cd;
             border-left: 4px solid #ffc107;
-            padding: 15px;
-            border-radius: 8px;
-            margin-top: 20px;
-            font-size: 0.95em;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 15px;
+            font-size: 0.9em;
             color: #333;
-            line-height: 1.6;
-        }
-        
-        .explanation h4 {
-            color: #ff9800;
-            margin-bottom: 8px;
+            line-height: 1.5;
         }
         
         .tip {
             background: #e8f5e9;
             border-left: 4px solid #4caf50;
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 8px;
+            font-size: 0.85em;
+            color: #2e7d32;
+        }
+
+        .benchmark {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
             padding: 12px;
-            border-radius: 8px;
+            border-radius: 6px;
             margin-top: 10px;
             font-size: 0.9em;
-            color: #2e7d32;
+            color: #1565c0;
+            font-weight: 500;
+        }
+        
+        .share-buttons {
+            display: flex;
+            gap: 8px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .share-btn {
+            flex: 1;
+            min-width: 100px;
+            padding: 8px;
+            font-size: 0.8em;
+            background: #f0f0f0;
+            color: #333;
+        }
+        
+        .share-btn:hover {
+            background: #e0e0e0;
         }
         
         .error {
             background: #ffebee;
             border-left: 4px solid #f44336;
-            padding: 15px;
-            border-radius: 10px;
+            padding: 12px;
+            border-radius: 8px;
             color: #c62828;
             display: none;
-            margin-top: 20px;
+            margin-top: 15px;
+            font-size: 0.9em;
         }
         
         .error.show {
@@ -182,7 +198,7 @@
         .loading {
             display: none;
             text-align: center;
-            margin-top: 20px;
+            margin-top: 15px;
         }
         
         .loading.show {
@@ -193,8 +209,8 @@
             border: 3px solid #f3f3f3;
             border-top: 3px solid #667eea;
             border-radius: 50%;
-            width: 30px;
-            height: 30px;
+            width: 25px;
+            height: 25px;
             animation: spin 1s linear infinite;
             margin: 0 auto;
         }
@@ -205,58 +221,115 @@
         }
         
         .stats-section {
-            margin-top: 40px;
+            margin-top: 30px;
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 20px;
+            gap: 15px;
         }
         
         .stat-card {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 25px;
-            border-radius: 15px;
+            padding: 18px;
+            border-radius: 12px;
             text-align: center;
             box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
         }
         
         .stat-card h3 {
-            font-size: 0.9em;
+            font-size: 0.85em;
             opacity: 0.95;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
         
         .stat-card .value {
-            font-size: 2.2em;
+            font-size: 1.8em;
             font-weight: bold;
         }
         
+        .objective-section {
+            background: #f0f8ff;
+            border: 2px solid #667eea;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        
+        .objective-section h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 0.95em;
+        }
+        
+        .objective-form {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .objective-form input {
+            flex: 1;
+        }
+        
+        .objective-form button {
+            flex: 0 1 100px;
+            margin: 0;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4caf50 0%, #8bc34a 100%);
+            width: 0%;
+            transition: width 0.3s;
+        }
+        
         .charts-section {
-            margin-top: 40px;
+            margin-top: 30px;
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 30px;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        @media (min-width: 768px) {
+            .charts-section {
+                grid-template-columns: 1fr 1fr;
+            }
         }
         
         .chart-box {
             background: #f9f9f9;
-            padding: 25px;
-            border-radius: 15px;
+            padding: 18px;
+            border-radius: 12px;
             box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
         }
         
         .chart-title {
             color: #333;
             font-weight: 600;
-            font-size: 1.2em;
-            margin-bottom: 20px;
+            font-size: 1em;
+            margin-bottom: 15px;
             text-align: center;
         }
         
         .chart-container {
             position: relative;
-            height: 300px;
+            height: 250px;
             display: none;
+        }
+
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 300px;
+            }
         }
         
         .chart-container.show {
@@ -264,30 +337,30 @@
         }
         
         .history-section {
-            margin-top: 40px;
+            margin-top: 30px;
             border-top: 2px solid #e0e0e0;
-            padding-top: 30px;
+            padding-top: 20px;
         }
         
         .history-title {
             color: #333;
             font-weight: 600;
-            font-size: 1.3em;
-            margin-bottom: 20px;
+            font-size: 1.1em;
+            margin-bottom: 15px;
         }
         
         .history-list {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 8px;
         }
         
         .history-item {
             background: #f9f9f9;
-            padding: 15px;
-            border-radius: 8px;
+            padding: 12px;
+            border-radius: 6px;
             border-left: 4px solid #667eea;
-            font-size: 0.95em;
+            font-size: 0.9em;
             color: #555;
             transition: all 0.3s;
         }
@@ -306,38 +379,57 @@
             color: #999;
             font-style: italic;
             text-align: center;
-            padding: 20px;
+            padding: 15px;
         }
         
         .clear-btn {
-            margin-top: 15px;
+            margin-top: 10px;
             background: #f0f0f0;
             color: #666;
-            font-size: 0.9em;
-            padding: 10px;
+            font-size: 0.85em;
+            padding: 8px;
         }
         
-        .clear-btn:hover {
-            background: #e0e0e0;
-        }
-
         .education-box {
             background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
             border-left: 4px solid #667eea;
-            padding: 20px;
-            border-radius: 10px;
-            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
         }
-
+        
         .education-box h3 {
             color: #667eea;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
+            font-size: 0.95em;
         }
-
+        
         .education-box p {
             color: #555;
-            line-height: 1.6;
-            font-size: 0.95em;
+            line-height: 1.5;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 767px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 1.6em;
+            }
+            
+            .emoji {
+                font-size: 2em;
+            }
+            
+            .result-value {
+                font-size: 1.6em;
+            }
+
+            .stat-card .value {
+                font-size: 1.5em;
+            }
         }
     </style>
 </head>
@@ -346,7 +438,7 @@
         <div class="header">
             <div class="emoji">🌍</div>
             <h1>Carbon Tracker</h1>
-            <p>Comprendre et réduire ton empreinte carbone</p>
+            <p>L'app pour comprendre et réduire ton empreinte carbone</p>
         </div>
         
         <div class="form-group">
@@ -375,15 +467,16 @@
         <div class="result" id="result">
             <div class="result-title">📊 Résultat</div>
             <div class="result-value" id="resultValue">0 kg CO2</div>
-            <div class="result-unit" id="resultDetails"></div>
             
             <div class="explanation" id="explanation"></div>
             <div class="tip" id="tip"></div>
+            <div class="benchmark" id="benchmark"></div>
+            
+            <div class="share-buttons" id="shareButtons"></div>
         </div>
         
         <div class="error" id="error"></div>
         
-        <!-- STATISTIQUES -->
         <div class="stats-section" id="statsSection" style="display: none;">
             <div class="stat-card">
                 <h3>☁️ Total CO2</h3>
@@ -394,8 +487,17 @@
                 <div class="value" id="totalCalcs">0</div>
             </div>
         </div>
+
+        <!-- OBJECTIFS -->
+        <div class="objective-section" id="objectiveSection" style="display: none;">
+            <h3>🎯 Mon objectif de réduction</h3>
+            <div class="objective-form">
+                <input type="number" id="objectiveValue" placeholder="Réduction % (ex: 20)" min="0" max="100" step="1">
+                <button onclick="setObjective()">Fixer</button>
+            </div>
+            <div id="objectiveInfo"></div>
+        </div>
         
-        <!-- GRAPHIQUES -->
         <div class="charts-section" id="chartsSection">
             <div class="chart-box">
                 <div class="chart-title">📊 Répartition des émissions</div>
@@ -411,19 +513,15 @@
             </div>
         </div>
 
-        <!-- INFOS ÉDUCATIVES -->
         <div class="education-box" id="educationBox" style="display: none;">
             <h3>💡 Qu'est-ce que l'empreinte carbone ?</h3>
-            <p>L'empreinte carbone mesure la quantité de CO2 et de gaz à effet de serre que tu génères par tes activités. 
-            Plus c'est bas, mieux c'est pour la planète ! 🌱</p>
-            <p style="margin-top: 10px;"><strong>Objectif mondial :</strong> Réduire de 50% d'ici 2030 pour limiter le réchauffement climatique.</p>
+            <p>L'empreinte carbone mesure la quantité de CO2 que tu génères. Notre objectif : réduire de 50% d'ici 2030 pour sauver la planète 🌱</p>
         </div>
         
-        <!-- HISTORIQUE -->
         <div class="history-section">
-            <div class="history-title">📋 Mon Historique (Sauvegardé dans le cloud ☁️)</div>
+            <div class="history-title">📋 Mon Historique Cloud</div>
             <div class="history-list" id="historyList">
-                <div class="history-empty">Aucun calcul encore - commence maintenant ! 🚀</div>
+                <div class="history-empty">Commence maintenant ! 🚀</div>
             </div>
             <button class="clear-btn" onclick="clearHistory()">Effacer l'historique</button>
         </div>
@@ -433,7 +531,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
         import { getFirestore, collection, addDoc, query, orderBy, limit, onSnapshot, getDocs, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
-        // Firebase config
         const firebaseConfig = {
             apiKey: "AIzaSyAT4IsI4MY9Ds2E92YVBh4FyaNI1bveCgU",
             authDomain: "carbon-tracker-7c1b4.firebaseapp.com",
@@ -444,7 +541,6 @@
             measurementId: "G-R7M845HV6X"
         };
 
-        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         
@@ -452,42 +548,52 @@
         let barChart = null;
         const userId = 'anonymous-user';
 
+        const worldwideAverages = {
+            car: 5000,
+            bus: 800,
+            train: 600,
+            flight: 2000,
+            electricity: 3000,
+            meat: 100
+        };
+
         const explanations = {
             car: {
                 title: "🚗 Voiture personnelle",
-                text: "La voiture émet environ 0.21 kg de CO2 par kilomètre. C'est l'une des activités les plus polluantes !",
-                tip: "💡 Conseil : Utilise les transports en commun, le covoiturage ou le vélo pour réduire !"
+                text: "La voiture émet ~0.21 kg CO2/km. C'est très polluant !",
+                tip: "💡 Covoiturage, vélo, transport en commun = meilleur choix !"
             },
             bus: {
                 title: "🚌 Bus",
-                text: "Le bus émet seulement 0.089 kg de CO2 par km. C'est 2,5x moins qu'une voiture !",
-                tip: "💡 Conseil : Prendre le bus réduit considérablement ton empreinte carbone."
+                text: "Le bus émet ~0.089 kg CO2/km. 2,5x moins qu'une voiture !",
+                tip: "💡 Excellent choix pour réduire ton empreinte !"
             },
             train: {
                 title: "🚂 Train",
-                text: "Le train émet 0.041 kg de CO2 par km. C'est le moyen de transport le moins polluant !",
-                tip: "💡 Conseil : Le train est 5x moins polluant qu'une voiture. Préfère-le quand possible !"
+                text: "Le train émet ~0.041 kg CO2/km. Le plus écologique !",
+                tip: "💡 Le train = 5x moins polluant qu'une voiture. Choix n°1 !"
             },
             flight: {
                 title: "✈️ Avion",
-                text: "L'avion émet 0.255 kg de CO2 par km. C'est extrêmement polluant !",
-                tip: "💡 Conseil : Limite tes vols. Un aller-retour Paris-New York = 5 tonnes de CO2 !"
+                text: "L'avion émet ~0.255 kg CO2/km. Très polluant !",
+                tip: "💡 Un aller-retour Paris-NY = 5 tonnes de CO2 ! À éviter si possible."
             },
             electricity: {
                 title: "⚡ Électricité",
-                text: "Cela dépend de ta source d'énergie. En France, c'est moins polluant grâce au nucléaire.",
-                tip: "💡 Conseil : Utilise des ampoules LED, éteins les appareils en veille !"
+                text: "Dépend de ta source. La France est privilégiée (nucléaire).",
+                tip: "💡 Ampoules LED, éteindre en veille = économies d'énergie !"
             },
             meat: {
                 title: "🥩 Viande",
-                text: "La viande génère 27 kg de CO2 par kg. L'élevage est très gourmand en ressources.",
-                tip: "💡 Conseil : Réduis la consommation de viande rouge 2-3 jours par semaine !"
+                text: "La viande = 27 kg CO2/kg. L'élevage consomme beaucoup de ressources.",
+                tip: "💡 Réduis à 2-3 jours/semaine. Le végétal = 10x moins polluant !"
             }
         };
         
         loadHistory();
         updateStats();
         document.getElementById('educationBox').style.display = 'block';
+        document.getElementById('objectiveSection').style.display = 'block';
         
         window.calculateCarbon = function() {
             const activity = document.getElementById('activity').value;
@@ -530,11 +636,24 @@
         function showResult(data) {
             const resultDiv = document.getElementById('result');
             document.getElementById('resultValue').textContent = `${data.carbon_kg} kg CO2`;
-            document.getElementById('resultDetails').textContent = `${data.activity} - ${data.value} unités`;
             
             const exp = explanations[data.activity];
             document.getElementById('explanation').innerHTML = `<h4>${exp.title}</h4><p>${exp.text}</p>`;
             document.getElementById('tip').innerHTML = exp.tip;
+            
+            // Benchmark
+            const worldAvg = worldwideAverages[data.activity];
+            const percentage = ((data.carbon_kg / worldAvg) * 100).toFixed(0);
+            const comparison = percentage > 100 ? `${percentage}% au-DESSUS de la moyenne mondiale 📈` : `${percentage}% EN-DESSOUS de la moyenne 📉`;
+            document.getElementById('benchmark').innerHTML = `<strong>📊 Comparaison :</strong> ${comparison}`;
+            
+            // Share buttons
+            const shareText = `Je viens de calculer mon empreinte carbone : ${data.carbon_kg} kg CO2 pour ${data.activity}. Et toi ? 🌍 ${window.location.href}`;
+            document.getElementById('shareButtons').innerHTML = `
+                <button class="share-btn" onclick="shareTwitter('${encodeURIComponent(shareText)}')">𝕏 Twitter</button>
+                <button class="share-btn" onclick="shareFacebook()">f Facebook</button>
+                <button class="share-btn" onclick="copyLink()">🔗 Copier lien</button>
+            `;
             
             resultDiv.classList.add('show');
         }
@@ -549,7 +668,7 @@
                 });
                 loadHistory();
             } catch (e) {
-                console.error('Erreur Firestore:', e);
+                console.error('Erreur:', e);
             }
         }
         
@@ -571,7 +690,7 @@
                 });
                 
                 if (history.length === 0) {
-                    historyList.innerHTML = '<div class="history-empty">Aucun calcul encore - commence maintenant ! 🚀</div>';
+                    historyList.innerHTML = '<div class="history-empty">Commence maintenant ! 🚀</div>';
                     return;
                 }
                 
@@ -602,6 +721,7 @@
                 document.getElementById('statsSection').style.display = 'grid';
                 document.getElementById('chartsSection').style.display = 'grid';
                 updateCharts(history);
+                updateObjectiveProgress(totalCO2);
             }
         }
         
@@ -618,7 +738,6 @@
             const data = Object.values(aggregated);
             const colors = ['#667eea', '#764ba2', '#f093fb', '#4facfe', '#00f2fe', '#43e97b'];
             
-            // PIE CHART
             const pieCtx = document.getElementById('pieChart').getContext('2d');
             if (pieChart) pieChart.destroy();
             document.getElementById('pieChartContainer').classList.add('show');
@@ -630,7 +749,7 @@
                     datasets: [{
                         data: data,
                         backgroundColor: colors.slice(0, labels.length),
-                        borderWidth: 3,
+                        borderWidth: 2,
                         borderColor: '#fff',
                     }]
                 },
@@ -640,13 +759,12 @@
                     plugins: {
                         legend: {
                             position: 'bottom',
-                            labels: { padding: 15, font: { size: 12 } }
+                            labels: { padding: 10, font: { size: 11 } }
                         }
                     }
                 }
             });
             
-            // BAR CHART
             const barCtx = document.getElementById('barChart').getContext('2d');
             if (barChart) barChart.destroy();
             document.getElementById('barChartContainer').classList.add('show');
@@ -659,7 +777,7 @@
                         label: 'CO2 (kg)',
                         data: data,
                         backgroundColor: colors.slice(0, labels.length),
-                        borderRadius: 10,
+                        borderRadius: 8,
                         borderSkipped: false
                     }]
                 },
@@ -682,8 +800,44 @@
             return emojis[activity] || '📊';
         }
         
+        window.setObjective = function() {
+            const objective = document.getElementById('objectiveValue').value;
+            if (!objective) return;
+            localStorage.setItem('carbonObjective', objective);
+            updateObjectiveProgress(0);
+            alert('✅ Objectif de réduction de ' + objective + '% fixé !');
+        };
+
+        function updateObjectiveProgress(currentTotal) {
+            const objective = localStorage.getItem('carbonObjective') || 0;
+            const objectiveInfo = document.getElementById('objectiveInfo');
+            
+            if (objective > 0) {
+                objectiveInfo.innerHTML = `
+                    <p>Réduction ciblée : <strong>${objective}%</strong></p>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${Math.min(50, (currentTotal / 2000) * 100)}%"></div>
+                    </div>
+                    <p style="margin-top: 8px; font-size: 0.85em;">Continue tes efforts ! 💪</p>
+                `;
+            }
+        }
+
+        window.shareTwitter = function(text) {
+            window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank');
+        };
+
+        window.shareFacebook = function() {
+            window.open(`https://www.facebook.com/sharer/sharer.php?u=${window.location.href}`, '_blank');
+        };
+
+        window.copyLink = function() {
+            navigator.clipboard.writeText(window.location.href);
+            alert('✅ Lien copié !');
+        };
+        
         window.clearHistory = async function() {
-            if (confirm('Êtes-vous sûr de vouloir effacer tout l\'historique ?')) {
+            if (confirm('Êtes-vous sûr ?')) {
                 const snapshot = await getDocs(collection(db, 'users', userId, 'history'));
                 snapshot.forEach(async doc => {
                     await deleteDoc(doc.ref);
